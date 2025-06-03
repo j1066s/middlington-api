@@ -1,4 +1,4 @@
-fflask
+flask
 requests
 feedparser
 pytrends
