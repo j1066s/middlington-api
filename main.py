@@ -18,11 +18,11 @@ def full_data():
 
     # --- ONS CPIH (Inflation Rate) ---
     try:
-        cpi_url = "https://api.beta.ons.gov.uk/v1/datasets/cpih01/editions/time-series/versions/4/observations"
+        cpi_url = "https://api.beta.ons.gov.uk/v1/datasets/mm23/editions/time-series/versions/1/observations"
         cpi_params = {
             "time": "latest",
             "geography": "K02000001",
-            "aggregate": "cpih1dim1G100000"
+            "aggregate": "L55O"
         }
         cpi_response = requests.get(cpi_url, params=cpi_params)
         if cpi_response.status_code == 200:
@@ -39,11 +39,11 @@ def full_data():
 
     # --- ONS Unemployment Rate ---
     try:
-        u_url = "https://api.beta.ons.gov.uk/v1/datasets/lms/editions/time-series/versions/3/observations"
+        u_url = "https://api.beta.ons.gov.uk/v1/datasets/lms/editions/time-series/versions/1/observations"
         u_params = {
             "time": "latest",
             "geography": "K02000001",
-            "aggregate": "unem01"
+            "aggregate": "MGSX"
         }
         u_response = requests.get(u_url, params=u_params)
         if u_response.status_code == 200:
@@ -58,13 +58,13 @@ def full_data():
     except Exception as e:
         output["unemployment_error"] = str(e)
 
-    # --- ONS Wage Growth (Average Weekly Earnings) ---
+    # --- ONS Wage Growth (Earnings) ---
     try:
-        wage_url = "https://api.beta.ons.gov.uk/v1/datasets/earn01/editions/time-series/versions/3/observations"
+        wage_url = "https://api.beta.ons.gov.uk/v1/datasets/lms/editions/time-series/versions/1/observations"
         wage_params = {
             "time": "latest",
             "geography": "K02000001",
-            "aggregate": "kac3"
+            "aggregate": "KAC3"
         }
         wage_response = requests.get(wage_url, params=wage_params)
         if wage_response.status_code == 200:
@@ -102,7 +102,7 @@ def full_data():
     except Exception as e:
         output["google_trends_error"] = str(e)
 
-    # --- Weather from Open-Meteo ---
+    # --- Weather (Open-Meteo) ---
     try:
         weather = requests.get("https://api.open-meteo.com/v1/forecast?latitude=52.2&longitude=0.12&current_weather=true")
         output["weather"] = weather.json().get("current_weather", {})
@@ -127,3 +127,4 @@ def full_data():
 if __name__ == "__main__":
     import os
     app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+
