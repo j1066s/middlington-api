@@ -1,249 +1,109 @@
 from flask import Flask, jsonify
-import feedparser
 import requests
+import feedparser
+from pytrends.request import TrendReq
 
 app = Flask(__name__)
 
-@app.route("/weather", methods=["GET"])
-def get_weather():
-    return jsonify({
-        "location": "Middlington",
-        "forecast": "Rainy",
-        "temperature_c": 13,
-        "wind_speed_kph": 22,
-        "warning": "Yellow weather warning for localised flooding"
-    })
-
-@app.route("/tiktok-trends", methods=["GET"])
-def get_tiktok_trends():
-    return jsonify({
-        "tiktok_trends": [
-            "Air fryer pasta recipes",
-            "Skip meals to save money challenge",
-            "POV: Budget Mum UK",
-            "Corner shop hauls",
-            "Quiet quitting remix"
-        ]
-    })
-
-@app.route("/news-headlines", methods=["GET"])
-def get_news_headlines():
-    feed_url = "http://feeds.bbci.co.uk/news/rss.xml"
-    feed = feedparser.parse(feed_url)
-    headlines = [{"title": entry.title, "link": entry.link} for entry in feed.entries[:5]]
-    return jsonify({"headlines": headlines})
-
-@app.route("/ons-gdp", methods=["GET"])
-def get_ons_gdp():
-    try:
-        ons_url = "https://api.ons.gov.uk/timeseries/IHYQ/dataset/UKEA/data"
-        response = requests.get(ons_url)
-        
-        if response.status_code == 200:
-            data = response.json()
-            observations = data.get('observations', [])[-5:]
-            
-            ons_data = []
-            for obs in observations:
-                ons_data.append({
-                    "value": obs.get('value', 'N/A'),
-                    "date": obs.get('date', 'N/A')
-                })
-            
-            return jsonify({
-                "data_source": "ONS UK GDP Quarterly Data",
-                "description": "Gross Domestic Product: chained volume measures: Seasonally adjusted £m",
-                "latest_data": ons_data
-            })
-        else:
-            return jsonify({"error": "Failed to fetch ONS GDP data"}), 500
-    
-    except Exception as e:
-        return jsonify({"error": "Error fetching ONS GDP data", "message": str(e)}), 500
-
-@app.route("/ons-inflation", methods=["GET"])
-def get_ons_inflation():
-    try:
-        ons_url = "https://api.ons.gov.uk/timeseries/D7G7/dataset/MM23/data"
-        response = requests.get(ons_url)
-        
-        if response.status_code == 200:
-            data = response.json()
-            observations = data.get('observations', [])[-12:]
-            
-            inflation_data = []
-            for obs in observations:
-                inflation_data.append({
-                    "rate_percent": obs.get('value', 'N/A'),
-                    "date": obs.get('date', 'N/A')
-                })
-            
-            return jsonify({
-                "data_source": "ONS UK Inflation Rate",
-                "description": "Consumer Prices Index including owner occupiers' housing costs (CPIH) 12-month rate",
-                "latest_data": inflation_data
-            })
-        else:
-            return jsonify({"error": "Failed to fetch ONS inflation data"}), 500
-    
-    except Exception as e:
-        return jsonify({"error": "Error fetching ONS inflation data", "message": str(e)}), 500
-
-@app.route("/ons-unemployment", methods=["GET"])
-def get_ons_unemployment():
-    try:
-        ons_url = "https://api.ons.gov.uk/timeseries/MGSX/dataset/LMS/data"
-        response = requests.get(ons_url)
-        
-        if response.status_code == 200:
-            data = response.json()
-            observations = data.get('observations', [])[-12:]
-            
-            unemployment_data = []
-            for obs in observations:
-                unemployment_data.append({
-                    "rate_percent": obs.get('value', 'N/A'),
-                    "date": obs.get('date', 'N/A')
-                })
-            
-            return jsonify({
-                "data_source": "ONS UK Unemployment Rate",
-                "description": "Unemployment rate (aged 16 and over, seasonally adjusted)",
-                "latest_data": unemployment_data
-            })
-        else:
-            return jsonify({"error": "Failed to fetch ONS unemployment data"}), 500
-    
-    except Exception as e:
-        return jsonify({"error": "Error fetching ONS unemployment data", "message": str(e)}), 500
-
-@app.route("/ons-house-prices", methods=["GET"])
-def get_ons_house_prices():
-    try:
-        ons_url = "https://api.ons.gov.uk/timeseries/WLPE/dataset/HPSSA/data"
-        response = requests.get(ons_url)
-        
-        if response.status_code == 200:
-            data = response.json()
-            observations = data.get('observations', [])[-12:]
-            
-            house_price_data = []
-            for obs in observations:
-                house_price_data.append({
-                    "average_price_gbp": obs.get('value', 'N/A'),
-                    "date": obs.get('date', 'N/A')
-                })
-            
-            return jsonify({
-                "data_source": "ONS UK House Prices",
-                "description": "Average house prices for the United Kingdom (seasonally adjusted)",
-                "latest_data": house_price_data
-            })
-        else:
-            return jsonify({"error": "Failed to fetch ONS house price data"}), 500
-    
-    except Exception as e:
-        return jsonify({"error": "Error fetching ONS house price data", "message": str(e)}), 500
-
-@app.route("/ons-population", methods=["GET"])
-def get_ons_population():
-    try:
-        ons_url = "https://api.ons.gov.uk/timeseries/UKPOP/dataset/POP/data"
-        response = requests.get(ons_url)
-        
-        if response.status_code == 200:
-            data = response.json()
-            observations = data.get('observations', [])[-5:]
-            
-            population_data = []
-            for obs in observations:
-                population_data.append({
-                    "population_thousands": obs.get('value', 'N/A'),
-                    "year": obs.get('date', 'N/A')
-                })
-            
-            return jsonify({
-                "data_source": "ONS UK Population",
-                "description": "UK population estimates (mid-year, thousands)",
-                "latest_data": population_data
-            })
-        else:
-            return jsonify({"error": "Failed to fetch ONS population data"}), 500
-    
-    except Exception as e:
-        return jsonify({"error": "Error fetching ONS population data", "message": str(e)}), 500
-
-@app.route("/ons-retail-sales", methods=["GET"])
-def get_ons_retail_sales():
-    try:
-        ons_url = "https://api.ons.gov.uk/timeseries/J5EH/dataset/DRSI/data"
-        response = requests.get(ons_url)
-        
-        if response.status_code == 200:
-            data = response.json()
-            observations = data.get('observations', [])[-12:]
-            
-            retail_data = []
-            for obs in observations:
-                retail_data.append({
-                    "index_value": obs.get('value', 'N/A'),
-                    "date": obs.get('date', 'N/A')
-                })
-            
-            return jsonify({
-                "data_source": "ONS UK Retail Sales",
-                "description": "Retail sales quantity (seasonally adjusted)",
-                "latest_data": retail_data
-            })
-        else:
-            return jsonify({"error": "Failed to fetch ONS retail sales data"}), 500
-    
-    except Exception as e:
-        return jsonify({"error": "Error fetching ONS retail sales data", "message": str(e)}), 500
-
-@app.route("/yougov-polls", methods=["GET"])
-def get_yougov_polls():
-    return jsonify({
-        "data_source": "YouGov UK Political Polling",
-        "description": "Latest UK voting intention polls",
-        "polls": [
-            {
-                "party": "Conservative",
-                "percentage": 24,
-                "change": "-2"
-            },
-            {
-                "party": "Labour", 
-                "percentage": 42,
-                "change": "+1"
-            },
-            {
-                "party": "Liberal Democrat",
-                "percentage": 12,
-                "change": "0"
-            },
-            {
-                "party": "Reform UK",
-                "percentage": 15,
-                "change": "+1"
-            },
-            {
-                "party": "Green",
-                "percentage": 6,
-                "change": "0"
-            }
-        ],
-        "poll_date": "2024-01-15",
-        "sample_size": 1742,
-        "note": "This is sample data - YouGov doesn't provide a free public API"
-    })
-
 @app.route("/")
 def index():
-    return jsonify({"status": "Middlington API is running."})
+    return jsonify({
+        "status": "Middlington API is running.",
+        "endpoints": ["/full-data"]
+    })
 
+@app.route("/full-data", methods=["GET"])
+def full_data():
+    output = {}
+
+    # --- ONS CPIH (Inflation) ---
+    try:
+        cpi_url = "https://api.beta.ons.gov.uk/v1/datasets/cpih01/editions/time-series/versions/4/observations"
+        cpi_params = {
+            "time": "latest",
+            "geography": "K02000001",
+            "aggregate": "cpih1dim1G100000"
+        }
+        cpi_response = requests.get(cpi_url, params=cpi_params)
+        cpi_data = cpi_response.json()
+        output["inflation_rate"] = float(cpi_data["observations"][0]["observation"])
+    except Exception as e:
+        output["inflation_error"] = str(e)
+
+    # --- ONS Unemployment Rate ---
+    try:
+        u_url = "https://api.beta.ons.gov.uk/v1/datasets/lms/editions/time-series/versions/3/observations"
+        u_params = {
+            "time": "latest",
+            "geography": "K02000001",
+            "aggregate": "unem01"
+        }
+        u_response = requests.get(u_url, params=u_params)
+        u_data = u_response.json()
+        output["unemployment_rate"] = float(u_data["observations"][0]["observation"])
+    except Exception as e:
+        output["unemployment_error"] = str(e)
+
+    # --- ONS Wage Growth (Earnings) ---
+    try:
+        wage_url = "https://api.beta.ons.gov.uk/v1/datasets/earn01/editions/time-series/versions/3/observations"
+        wage_params = {
+            "time": "latest",
+            "geography": "K02000001",
+            "aggregate": "kac3"
+        }
+        wage_response = requests.get(wage_url, params=wage_params)
+        wage_data = wage_response.json()
+        output["real_wage_growth"] = float(wage_data["observations"][0]["observation"])
+    except Exception as e:
+        output["real_wage_error"] = str(e)
+
+    # --- BBC News Headlines ---
+    try:
+        feed = feedparser.parse("http://feeds.bbci.co.uk/news/rss.xml")
+        output["news_headlines"] = [
+            {"title": entry.title, "link": entry.link}
+            for entry in feed.entries[:5]
+        ]
+    except Exception as e:
+        output["news_error"] = str(e)
+
+    # --- Google Trends (UK) ---
+    try:
+        pytrends = TrendReq(hl="en-GB", tz=0, geo="GB")
+        keywords = ["food prices", "Reform UK", "energy bills", "Tesco Clubcard"]
+        pytrends.build_payload(keywords, cat=0, timeframe="now 7-d", geo="GB")
+        interest = pytrends.interest_over_time()
+        if not interest.empty:
+            output["google_trends"] = {
+                kw: int(interest[kw].iloc[-1]) for kw in keywords
+            }
+    except Exception as e:
+        output["google_trends_error"] = str(e)
+
+    # --- Weather from Open-Meteo ---
+    try:
+        weather = requests.get("https://api.open-meteo.com/v1/forecast?latitude=52.2&longitude=0.12&current_weather=true")
+        output["weather"] = weather.json()["current_weather"]
+    except Exception as e:
+        output["weather_error"] = str(e)
+
+    # --- Trussell Trust (Static Data) ---
+    output["foodbank_usage_2024"] = {
+        "households_helped": 3000000,
+        "percent_with_children": 37,
+        "main_reasons": [
+            "Low income",
+            "Benefit delays",
+            "High energy bills"
+        ],
+        "source": "https://www.trusselltrust.org/news-and-blog/latest-stats/"
+    }
+
+    return jsonify(output)
+
+# ✅ Required for deployment on Render or any cloud platform
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    import os
+    app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
 
-import os
-app.run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
